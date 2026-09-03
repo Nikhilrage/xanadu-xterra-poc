@@ -2,6 +2,9 @@
   "name": "xanadu-xterra-poc",
   "private": true,
   "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "infra:up": "docker compose -f infrastructure/docker-compose.yml up -d",
+    "infra:down": "docker compose -f infrastructure/docker-compose.yml down",
     "backend:dev": "concurrently --kill-others-on-fail --names gateway,auth,authorization,organisation,project,approval,agent,mcp --prefix-colors blue,green,magenta,cyan,yellow,gray,red,white \"npm --prefix api-gateway run start:dev\" \"npm --prefix auth-service run start:dev\" \"npm --prefix authorization-service run start:dev\" \"npm --prefix organisation-service run start:dev\" \"npm --prefix project-service run start:dev\" \"npm --prefix approval-service run start:dev\" \"npm --prefix agent-service run start:dev\" \"npm --prefix mcp-service run start:dev\""
   },
   "devDependencies": {
