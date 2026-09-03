@@ -5,6 +5,7 @@
 # dotenv environment variable files
 .env
 .env.*
+!.env.example
 
 # Tests
 /coverage
