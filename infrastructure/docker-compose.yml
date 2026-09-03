@@ -1,0 +1,91 @@
+version: "3.9"
+
+services:
+  openfga-postgres:
+    image: postgres:16
+    container_name: openfga-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: openfga
+      POSTGRES_PASSWORD: openfga
+      POSTGRES_DB: openfga_db
+    ports:
+      - "9100:5432"
+
+  openfga-migrate:
+    image: openfga/openfga:latest
+    container_name: openfga-migrate
+    depends_on:
+      - openfga-postgres
+    command:
+      - migrate
+    environment:
+      OPENFGA_DATASTORE_ENGINE: postgres
+      OPENFGA_DATASTORE_URI: postgres://openfga:openfga@openfga-postgres:5432/openfga_db?sslmode=disable
+
+  openfga:
+    image: openfga/openfga:latest
+    container_name: openfga
+    restart: always
+    depends_on:
+      - openfga-migrate
+    command:
+      - run
+    environment:
+      OPENFGA_DATASTORE_ENGINE: postgres
+      OPENFGA_DATASTORE_URI: postgres://openfga:openfga@openfga-postgres:5432/openfga_db?sslmode=disable
+      OPENFGA_PLAYGROUND_ENABLED: "true"
+    ports:
+      - "9000:8080" # OpenFGA API
+      - "9001:3000" # Playground
+
+  flowable:
+    image: flowable/all-in-one:latest
+    container_name: flowable
+    restart: always
+    depends_on:
+      flowable-postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://flowable-postgres:5432/flowable
+      SPRING_DATASOURCE_USERNAME: flowable
+      SPRING_DATASOURCE_PASSWORD: flowable
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      FLOWABLE_DATABASE_SCHEMA_UPDATE: "true"
+    ports:
+      - "8080:8080" # Flowable UI + REST API
+
+  flowable-postgres:
+    image: postgres:16
+    container_name: flowable-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: flowable
+      POSTGRES_USER: flowable
+      POSTGRES_PASSWORD: flowable
+    ports:
+      - "9300:5432" # Flowable database (host access for ER diagram tools)
+    volumes:
+      - flowable_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowable -d flowable"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: always
+    ports:
+      - "9200:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:
+  flowable_postgres_data:

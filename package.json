@@ -1,0 +1,10 @@
+{
+  "name": "xanadu-xterra-poc",
+  "private": true,
+  "scripts": {
+    "backend:dev": "concurrently --kill-others-on-fail --names gateway,auth,authorization,organisation,project,approval,agent,mcp --prefix-colors blue,green,magenta,cyan,yellow,gray,red,white \"npm --prefix api-gateway run start:dev\" \"npm --prefix auth-service run start:dev\" \"npm --prefix authorization-service run start:dev\" \"npm --prefix organisation-service run start:dev\" \"npm --prefix project-service run start:dev\" \"npm --prefix approval-service run start:dev\" \"npm --prefix agent-service run start:dev\" \"npm --prefix mcp-service run start:dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:flowable="http://flowable.org/bpmn"
+  targetNamespace="http://ixo.example/approval">
+
+  <process id="projectPublishingApproval" name="Project Publishing Approval" isExecutable="true">
+    <startEvent id="startProjectCreated" name="Project created" />
+
+    <parallelGateway id="splitComplianceChecks" name="Run RERA and KYC checks" />
+    <userTask id="reraCheckTask" name="RERA check" flowable:candidateGroups="rera-team" />
+    <exclusiveGateway id="reraApprovalGateway" name="RERA approved?" />
+    <endEvent id="reraRejectedEnd" name="Project rejected by RERA">
+      <terminateEventDefinition />
+    </endEvent>
+
+    <userTask id="kycCheckTask" name="KYC check" flowable:candidateGroups="kyc-team" />
+    <exclusiveGateway id="kycApprovalGateway" name="KYC approved?" />
+    <endEvent id="kycRejectedEnd" name="Project rejected by KYC">
+      <terminateEventDefinition />
+    </endEvent>
+
+    <parallelGateway id="joinComplianceChecks" name="Compliance checks complete" />
+    <userTask id="adminPublishTask" name="Admin publish" flowable:candidateGroups="admin" />
+    <userTask id="superAdminPublishTask" name="Super admin publish" flowable:candidateGroups="super-admin" />
+    <exclusiveGateway id="superAdminApprovalGateway" name="Super admin approved?" />
+    <endEvent id="superAdminRejectedEnd" name="Project rejected by super admin">
+      <terminateEventDefinition />
+    </endEvent>
+    <endEvent id="publishedEnd" name="Project published" />
+
+    <sequenceFlow id="flowStartToSplit" sourceRef="startProjectCreated" targetRef="splitComplianceChecks" />
+    <sequenceFlow id="flowSplitToRera" sourceRef="splitComplianceChecks" targetRef="reraCheckTask" />
+    <sequenceFlow id="flowSplitToKyc" sourceRef="splitComplianceChecks" targetRef="kycCheckTask" />
+
+    <sequenceFlow id="flowReraTaskToGateway" sourceRef="reraCheckTask" targetRef="reraApprovalGateway" />
+    <sequenceFlow id="flowReraApproved" sourceRef="reraApprovalGateway" targetRef="joinComplianceChecks">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${reraApproved == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flowReraRejected" sourceRef="reraApprovalGateway" targetRef="reraRejectedEnd">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${reraApproved == false}]]></conditionExpression>
+    </sequenceFlow>
+
+    <sequenceFlow id="flowKycTaskToGateway" sourceRef="kycCheckTask" targetRef="kycApprovalGateway" />
+    <sequenceFlow id="flowKycApproved" sourceRef="kycApprovalGateway" targetRef="joinComplianceChecks">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${kycApproved == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flowKycRejected" sourceRef="kycApprovalGateway" targetRef="kycRejectedEnd">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${kycApproved == false}]]></conditionExpression>
+    </sequenceFlow>
+
+    <sequenceFlow id="flowJoinToAdmin" sourceRef="joinComplianceChecks" targetRef="adminPublishTask" />
+    <sequenceFlow id="flowAdminToSuperAdmin" sourceRef="adminPublishTask" targetRef="superAdminPublishTask" />
+    <sequenceFlow id="flowSuperAdminToGateway" sourceRef="superAdminPublishTask" targetRef="superAdminApprovalGateway" />
+    <sequenceFlow id="flowSuperAdminApproved" sourceRef="superAdminApprovalGateway" targetRef="publishedEnd">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${superAdminApproved == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flowSuperAdminRejected" sourceRef="superAdminApprovalGateway" targetRef="superAdminRejectedEnd">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${superAdminApproved == false}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+</definitions>

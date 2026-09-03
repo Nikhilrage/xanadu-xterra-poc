@@ -1,0 +1,52 @@
+# Dependencies (root and every service)
+node_modules/
+**/node_modules/
+
+# Compiled output
+dist/
+**/dist/
+build/
+**/build/
+coverage/
+**/coverage/
+.nyc_output/
+**/.nyc_output/
+
+# Environment files and local secrets
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Logs and runtime files
+logs/
+**/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.pid
+*.pid.lock
+
+# Local editor and operating-system files
+.DS_Store
+**/.DS_Store
+.idea/
+**/.idea/
+.vscode/
+**/.vscode/
+*.swp
+*.swo
+
+# Temporary files
+.tmp/
+**/.tmp/
+.temp/
+**/.temp/
+*.tsbuildinfo
+
+# Local POC/debug exports
+sample.txt
